@@ -11,26 +11,39 @@ using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Framework;
 using ESRI.ArcGIS.Geometry;
+using System.Globalization;
 
 namespace AM2GE
 {
     public class AM2GE : ESRI.ArcGIS.Desktop.AddIns.Button
     {
+        #region Enums
 
-        #region Event Handler(s)
+        private enum enumLongLat
+        {
+            Latitude = 1,
+            Longitude = 2
+        };
 
-        private ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler _ActiveViewEventsViewRefreshed;
+        private enum enumReturnFormat
+        {
+            WithSigns = 0,
+            NMEA = 1
+        };
 
         #endregion
 
         #region Properties
 
+        Boolean StartedUP = false;
         private SerialPort _serialPort = new SerialPort();
+        private String NL = System.Environment.NewLine;
         private String _gpsPort = String.Empty;
         private Boolean _gpsRunning = false;
+        private String _gpsString = String.Empty;
         private String _gpsGLLString = String.Empty;
         private String _gpsGGAString = String.Empty;
-        private String _gspRMCString = String.Empty;
+        private String _gpsRMCString = String.Empty;
         private String _gpsVTGString = String.Empty;
 
         private String _arcMapLat = "39.715620";
@@ -44,15 +57,15 @@ namespace AM2GE
         private Boolean _noPorts = false;
         private Int32 _portCount = 0;
         private StreamWriter _sw;
-        static private String _trackingFileName = "tracking.kml";
-        static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/Arcmap2GoogleEarth/";
-        static private String _trackingFileLocation = _trackingFileName + _trackingFilePath;
+        static private String _trackingFileName = "AM2GE_Tracking.kml";
+        static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
+        static private String _trackingFileLocation = _trackingFilePath + _trackingFileName;
+        static private String _trackingFileLocation2 = _trackingFilePath + "2" + _trackingFileName;
         private Double dblEGA = 1000;
 
         private IApplication _application;
         private IMxDocument _mxdocument;
         private IMap _map;
-
 
         #endregion
 
@@ -61,6 +74,12 @@ namespace AM2GE
         public AM2GE()
         {
         }
+
+        #endregion
+
+        #region Event Handler(s)
+
+        private ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler _ActiveViewEventsViewRefreshed;
 
         #endregion
 
@@ -89,11 +108,40 @@ namespace AM2GE
             _application = this.Hook as IApplication;
             _mxdocument = (IMxDocument)_application.Document;
             _map = _mxdocument.FocusMap;
+            ActiveViewEventTracking(true);
 
-            ESRI.ArcGIS.Carto.IActiveViewEvents_Event activeViewEvents = _map as ESRI.ArcGIS.Carto.IActiveViewEvents_Event;
-            _ActiveViewEventsViewRefreshed = new ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler(OnActiveViewEventsViewRefreshed);
-            activeViewEvents.ViewRefreshed += _ActiveViewEventsViewRefreshed;
 
+            if (!System.IO.Directory.Exists(_trackingFilePath))
+                System.IO.Directory.CreateDirectory(_trackingFilePath);
+
+            _sw = File.CreateText(_trackingFileLocation);
+
+            _sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            _sw.WriteLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
+            _sw.WriteLine("<NetworkLink>");
+            _sw.WriteLine("<name>ArcMap to Google Earth Sync</name>");
+            _sw.WriteLine("<visibility>1</visibility>");
+            _sw.WriteLine("<LookAt>");
+            _sw.WriteLine("<longitude>-84.103446</longitude>");
+            _sw.WriteLine("<latitude>39.715620</latitude>");
+            _sw.WriteLine("<altitude>0</altitude>");
+            _sw.WriteLine("<heading>0</heading>");
+            _sw.WriteLine("<tilt>0</tilt>");
+            _sw.WriteLine("<range>510</range>");
+            _sw.WriteLine("</LookAt>");
+            _sw.WriteLine("<flyToView>1</flyToView>");
+            _sw.WriteLine("<Link>");
+            _sw.WriteLine("<href>" + _trackingFileLocation2 + "</href>");
+            _sw.WriteLine("<refreshMode>onInterval</refreshMode>");
+            _sw.WriteLine("<refreshInterval>2</refreshInterval>");
+            _sw.WriteLine("</Link>");
+            _sw.WriteLine("</NetworkLink>");
+            _sw.WriteLine("</kml>");
+
+            _sw.Close();
+
+            System.Diagnostics.Process.Start(_trackingFileLocation);
+            
         }
 
         private void CreateKML()
@@ -101,10 +149,10 @@ namespace AM2GE
             if (!System.IO.Directory.Exists(_trackingFilePath))
                 System.IO.Directory.CreateDirectory(_trackingFilePath);
 
-            _sw = File.CreateText(_trackingFileLocation);
+            _sw = File.CreateText(_trackingFileLocation2);
 
-            _sw.WriteLine("<?xml version=\"\"1.0\"\" encoding=\"\"UTF-8\"\"?>");
-            _sw.WriteLine("<kml xmlns=\"\"http://www.opengis.net/kml/2.2\"\">");
+            _sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            _sw.WriteLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
             _sw.WriteLine("<Placemark>");
             _sw.WriteLine("<name>ArcMap Location</name>");
             _sw.WriteLine("<visibility>1</visibility>");
@@ -126,7 +174,7 @@ namespace AM2GE
             _sw.Close();
         }
 
-        private void PointToLatLong(IPoint Point, out Double Latitude, out Double Longitude)
+        private void PointToLatLong(IPoint Point, out double Latitude, out double Longitude)
         {
             Latitude = 39.759444;
             Longitude = -84.191667;
@@ -158,7 +206,6 @@ namespace AM2GE
             catch (Exception) { }
             return;
         }
-
 
         private void OnActiveViewEventsViewRefreshed(ESRI.ArcGIS.Carto.IActiveView view, ESRI.ArcGIS.Carto.esriViewDrawPhase phase, System.Object data, ESRI.ArcGIS.Geometry.IEnvelope envelope)
         {
@@ -230,19 +277,55 @@ namespace AM2GE
                 }
             }
 
-            String convLat = DecimalPosToDegrees(lat, enumLongLat.Latitude, enumReturnformat.NMEA);
-            String convLong = DecimalPosToDegrees(lon, enumLongLat.Longitude, enumReturnformat.NMEA);
+            String convLat = DecimalPosToDegrees(lat, enumLongLat.Latitude, enumReturnFormat.NMEA);
+            String convLong = DecimalPosToDegrees(lon, enumLongLat.Longitude, enumReturnFormat.NMEA);
+
+            lat = Math.Round(lat, 5);
+            lon = Math.Round(lon, 5);
+
+            _arcMapLat = Convert.ToString(lat);
+            _arcMapLong = Convert.ToString(lon);
+
+            String nowTime = DateTime.Now.ToString("HHmmss.ss");
+            String nowDate = DateTime.Now.ToString("ddMMyy");
+
+            String checkSumString, checkSumRMC, checkSumGLL, checkSumGGA, checkSumVTG;
+
+            checkSumString = "$GPRMC," + nowTime + ",A," + convLat + ","+ convLong + ",0.00,0.00," + nowDate + ",0.0,E";
+            checkSumRMC = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E*" + checkSumRMC;
+            _gpsRMCString = _gpsString;
+
+            checkSumString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A";
+            checkSumGLL = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A*" + checkSumGLL;
+            _gpsGLLString = _gpsString;
+
+            checkSumString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,";
+            checkSumGGA = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,*" + checkSumGGA;
+            _gpsGGAString = _gpsString;
+
+            checkSumString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K";
+            checkSumVTG = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K*" + checkSumVTG;
+            _gpsVTGString = _gpsString;
 
 
-
-            
-
+            FakeGPS();
+            CreateKML();
 
         }
 
-
         private double distance(double lat1, double lon1, double lat2, double lon2, char unit)
         {
+            //'M' is statute miles
+            //'K' is kilometers (default)
+            //'N' is nautical miles  
             double theta = lon1 - lon2;
             double dist = Math.Sin(deg2rad(lat1)) * Math.Sin(deg2rad(lat2)) + Math.Cos(deg2rad(lat1)) * Math.Cos(deg2rad(lat2)) * Math.Cos(deg2rad(theta));
             dist = Math.Acos(dist);
@@ -269,6 +352,116 @@ namespace AM2GE
             return (rad / Math.PI * 180.0);
         }
 
+        private void ActiveViewEventTracking(bool turnOn)
+        {
+            if (turnOn)
+            {
+                ESRI.ArcGIS.Carto.IActiveViewEvents_Event activeViewEvents = _map as ESRI.ArcGIS.Carto.IActiveViewEvents_Event;
+                _ActiveViewEventsViewRefreshed = new ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler(OnActiveViewEventsViewRefreshed);
+                activeViewEvents.ViewRefreshed += _ActiveViewEventsViewRefreshed;
+            }
+            else
+            {
+
+            }
+
+        }
+
+        private String DecimalPosToDegrees(double Decimalpos, enumLongLat Type, enumReturnFormat OutputFormat, int SecondResolution = 2)
+        {
+            Int32 Deg = 0;
+            Double Min = 0, Sec = 0;
+            String Dir = "";
+            Double tmpPos = Decimalpos;
+            if (tmpPos < 0)
+                tmpPos = Decimalpos * -1;
+
+            Deg = (int)Math.Floor(tmpPos);
+            Min = (tmpPos - Deg) * 60;
+
+            switch (Type)
+            {
+                case enumLongLat.Latitude:
+                    if (Decimalpos < 0)
+                        Dir = "S";
+                    else
+                        Dir = "N";
+                    break;
+                
+                case enumLongLat.Longitude:
+                    if (Decimalpos < 0)
+                        Dir = "W";
+                    else
+                        Dir = "E";
+                    break;
+            }
+
+            Min = Math.Round(Min, 5);
+
+            if (Dir == "W" || Dir == "E")
+                return AddZeros(Deg, 3) + AddZeros(Min, 2) + Sec + "," + Dir;
+            else
+                return AddZeros(Deg, 2) + AddZeros(Min, 2) + Sec + "," + Dir;
+
+        }
+
+        private String AddZeros(double Value, int Zeros)
+        {
+            if (Math.Floor(Value).ToString().Length < Zeros)
+                return Value.ToString().PadLeft(Zeros, (char)'0');
+            return Value.ToString();
+        }
+
+        private String GetCheckSum(ref String InString)
+        {
+            long Current;
+            long Last;
+
+            try
+            {
+                if (InString.Substring(1, 1) == "$")
+                    InString = InString.Substring(2);
+
+                Last = (int)InString.Substring(1, 1).ToCharArray()[0];
+
+                for (Current = 2; Current <= InString.Length; Current++)
+                    Last = Last ^ (int)InString.Substring((int)Current, 1).ToCharArray()[0];
+                return String.Format("{0:X}", Last);
+                
+
+            }
+            catch (Exception) { }
+            return "0"; // this might cause a crash >....
+        }
+
+        private void FakeGPS()
+        {
+            if (_gpsRunning)
+            {
+                _serialPort.Write(_gpsRMCString + NL);
+                System.Threading.Thread.Sleep(200);
+                _serialPort.Write(_gpsGLLString + NL);
+                System.Threading.Thread.Sleep(200);
+                _serialPort.Write(_gpsGGAString + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write(_gpsVTGString + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write("$GPGSA,A,3,05,24,17,30,02,,,,,,,,5.6,3.3,4.5*34" + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write("$GPGSV,3,1,12,30,72,254,30,05,70,125,39,24,37,083,43,02,36,113,45*7B" + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write("$GPGSV,3,2,12,04,32,059,34,01,27,307,00,14,26,256,00,06,24,219,00*7F" + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write("$GPGSV,3,3,12,17,22,135,40,25,20,311,31,09,19,159,25,20,08,346,34*7C" + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write(_gpsRMCString + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write(_gpsGGAString + NL);
+                System.Threading.Thread.Sleep(100);
+                _serialPort.Write(_gpsGLLString + NL);
+            }
+        }
+        
         #endregion
     }
 
