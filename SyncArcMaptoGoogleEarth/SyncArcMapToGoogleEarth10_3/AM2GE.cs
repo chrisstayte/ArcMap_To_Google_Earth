@@ -5,7 +5,6 @@ using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using ESRI.ArcGIS.ADF.CATIDs;
 using ESRI.ArcGIS.ArcMapUI;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.esriSystem;
@@ -13,7 +12,7 @@ using ESRI.ArcGIS.Framework;
 using ESRI.ArcGIS.Geometry;
 using System.Globalization;
 
-namespace AM2GE
+namespace SyncArcMapToGoogleEarth10_3
 {
     public class AM2GE : ESRI.ArcGIS.Desktop.AddIns.Button
     {
@@ -51,11 +50,7 @@ namespace AM2GE
         private String _arcMapAlt = "510";
         private String _gpsAltitude = String.Empty;
 
-        private Boolean _portOpen = false;
-        private Boolean _programRunning = true;
         private String[] _Ports = new String[] { };
-        private Boolean _noPorts = false;
-        private Int32 _portCount = 0;
         private StreamWriter _sw;
         static private String _trackingFileName = "_AM2GE.kml";
         static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
@@ -262,9 +257,9 @@ namespace AM2GE
             //if (_loadFile)
             //{
             System.Diagnostics.Process.Start(_trackingFileLocation);
-                //_loadFile = false;
+            //_loadFile = false;
             //}
-            
+
         }
 
         private void CreateKML()
@@ -330,7 +325,7 @@ namespace AM2GE
             return;
         }
 
-        
+
         private double distance(double lat1, double lon1, double lat2, double lon2, char unit)
         {
             //'M' is statute miles
@@ -399,7 +394,7 @@ namespace AM2GE
                     else
                         Dir = "N";
                     break;
-                
+
                 case enumLongLat.Longitude:
                     if (Decimalpos < 0)
                         Dir = "W";
@@ -439,7 +434,7 @@ namespace AM2GE
                 for (Current = 2; Current <= InString.Length; Current++)
                     Last = Last ^ (int)InString.Substring((int)Current, 1).ToCharArray()[0];
                 return String.Format("{0:X}", Last);
-                
+
 
             }
             catch (Exception) { }
@@ -473,7 +468,7 @@ namespace AM2GE
                 _serialPort.Write(_gpsGLLString + NL);
             }
         }
-        
+
         #endregion
     }
 

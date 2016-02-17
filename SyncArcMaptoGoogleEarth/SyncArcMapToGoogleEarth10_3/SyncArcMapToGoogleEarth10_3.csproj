@@ -8,8 +8,8 @@
     <ProjectGuid>{C37767BB-18E6-4743-A5EC-1D7F2B38F487}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AM2GE</RootNamespace>
-    <AssemblyName>AM2GE</AssemblyName>
+    <RootNamespace>SyncArcMapToGoogleEarth10_3</RootNamespace>
+    <AssemblyName>SyncArcMapToGoogleEarth10_3</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
@@ -52,7 +52,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ESRI.ArcGIS.ADF, Version=10.3.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=x86" />
     <Reference Include="ESRI.ArcGIS.Carto, Version=10.3.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -94,7 +93,7 @@
     </AddInContent>
   </ItemGroup>
   <ItemGroup>
-    <AddInContent Include="Images\AM2GE_1.png" />
+    <AddInContent Include="Images\SyncArcMapToGoogleEarth10.3.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AM2GE.cs" />
