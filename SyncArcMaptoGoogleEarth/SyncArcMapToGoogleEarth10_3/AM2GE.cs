@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.IO.Ports;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-using ESRI.ArcGIS.ArcMapUI;
+﻿using ESRI.ArcGIS.ArcMapUI;
 using ESRI.ArcGIS.Carto;
-using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Framework;
 using ESRI.ArcGIS.Geometry;
-using System.Globalization;
+using System;
+using System.IO;
 
 namespace SyncArcMapToGoogleEarth10_3
 {
