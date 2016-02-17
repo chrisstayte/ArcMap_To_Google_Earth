@@ -34,23 +34,13 @@ namespace SyncArcMapToGoogleEarth10_3
 
         #region Properties
 
-        //private Boolean _loadFile = true;
-        private SerialPort _serialPort = new SerialPort();
-        private String NL = System.Environment.NewLine;
-        private String _gpsPort = String.Empty;
-        private Boolean _gpsRunning = false;
         private String _gpsString = String.Empty;
-        private String _gpsGLLString = String.Empty;
-        private String _gpsGGAString = String.Empty;
-        private String _gpsRMCString = String.Empty;
-        private String _gpsVTGString = String.Empty;
 
         private String _arcMapLat = "39.715620";
         private String _arcMapLong = "-84.103466";
         private String _arcMapAlt = "510";
         private String _gpsAltitude = String.Empty;
 
-        private String[] _Ports = new String[] { };
         private StreamWriter _sw;
         static private String _trackingFileName = "_AM2GE.kml";
         static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
@@ -88,8 +78,8 @@ namespace SyncArcMapToGoogleEarth10_3
             ArcMap.Application.CurrentTool = null;
             initiliaze();
 
-            //if (this.Checked) "This proved to not be efficent if the person closed arcmap
-            initializeTracking();
+            if (this.Checked)
+                initializeTracking();
         }
 
         protected override void OnUpdate()
@@ -180,35 +170,7 @@ namespace SyncArcMapToGoogleEarth10_3
             String nowTime = DateTime.Now.ToString("HHmmss.ss");
             String nowDate = DateTime.Now.ToString("ddMMyy");
 
-            String checkSumString, checkSumRMC, checkSumGLL, checkSumGGA, checkSumVTG;
-
-            checkSumString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E";
-            checkSumRMC = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E*" + checkSumRMC;
-            _gpsRMCString = _gpsString;
-
-            checkSumString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A";
-            checkSumGLL = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A*" + checkSumGLL;
-            _gpsGLLString = _gpsString;
-
-            checkSumString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,";
-            checkSumGGA = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,*" + checkSumGGA;
-            _gpsGGAString = _gpsString;
-
-            checkSumString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K";
-            checkSumVTG = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K*" + checkSumVTG;
-            _gpsVTGString = _gpsString;
-
-
-            FakeGPS();
-            CreateKML();
+            CreateTrackingKML();
         }
 
         #endregion
@@ -254,15 +216,10 @@ namespace SyncArcMapToGoogleEarth10_3
 
             _sw.Close();
 
-            //if (_loadFile)
-            //{
             System.Diagnostics.Process.Start(_trackingFileLocation);
-            //_loadFile = false;
-            //}
-
         }
 
-        private void CreateKML()
+        private void CreateTrackingKML()
         {
             if (!System.IO.Directory.Exists(_trackingFilePath))
                 System.IO.Directory.CreateDirectory(_trackingFilePath);
@@ -439,34 +396,6 @@ namespace SyncArcMapToGoogleEarth10_3
             }
             catch (Exception) { }
             return "0"; // this might cause a crash >....
-        }
-
-        private void FakeGPS()
-        {
-            if (_gpsRunning)
-            {
-                _serialPort.Write(_gpsRMCString + NL);
-                System.Threading.Thread.Sleep(200);
-                _serialPort.Write(_gpsGLLString + NL);
-                System.Threading.Thread.Sleep(200);
-                _serialPort.Write(_gpsGGAString + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write(_gpsVTGString + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write("$GPGSA,A,3,05,24,17,30,02,,,,,,,,5.6,3.3,4.5*34" + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write("$GPGSV,3,1,12,30,72,254,30,05,70,125,39,24,37,083,43,02,36,113,45*7B" + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write("$GPGSV,3,2,12,04,32,059,34,01,27,307,00,14,26,256,00,06,24,219,00*7F" + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write("$GPGSV,3,3,12,17,22,135,40,25,20,311,31,09,19,159,25,20,08,346,34*7C" + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write(_gpsRMCString + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write(_gpsGGAString + NL);
-                System.Threading.Thread.Sleep(100);
-                _serialPort.Write(_gpsGLLString + NL);
-            }
         }
 
         #endregion
