@@ -35,7 +35,7 @@ namespace AM2GE
 
         #region Properties
 
-        Boolean StartedUP = false;
+        //private Boolean _loadFile = true;
         private SerialPort _serialPort = new SerialPort();
         private String NL = System.Environment.NewLine;
         private String _gpsPort = String.Empty;
@@ -57,10 +57,10 @@ namespace AM2GE
         private Boolean _noPorts = false;
         private Int32 _portCount = 0;
         private StreamWriter _sw;
-        static private String _trackingFileName = "AM2GE_Tracking.kml";
+        static private String _trackingFileName = "_AM2GE.kml";
         static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
-        static private String _trackingFileLocation = _trackingFilePath + _trackingFileName;
-        static private String _trackingFileLocation2 = _trackingFilePath + "2" + _trackingFileName;
+        static private String _trackingFileLocation = _trackingFilePath + "NetworkLink" + _trackingFileName;
+        static private String _trackingFileLocation2 = _trackingFilePath + "TrackingFile" + _trackingFileName;
         private Double dblEGA = 1000;
 
         private IApplication _application;
@@ -92,11 +92,128 @@ namespace AM2GE
             //
             ArcMap.Application.CurrentTool = null;
             initiliaze();
+
+            //if (this.Checked) "This proved to not be efficent if the person closed arcmap
+            initializeTracking();
         }
 
         protected override void OnUpdate()
         {
             Enabled = ArcMap.Application != null;
+        }
+
+        private void OnActiveViewEventsViewRefreshed(ESRI.ArcGIS.Carto.IActiveView view, ESRI.ArcGIS.Carto.esriViewDrawPhase phase, System.Object data, ESRI.ArcGIS.Geometry.IEnvelope envelope)
+        {
+            IPoint point = new Point();
+            IPoint lowerLeftPoint = new Point();
+            IPoint upperRightPoint = new Point();
+
+
+            Double latXmin;
+            Double latXmax;
+
+            Double longYmin;
+            Double longYmax;
+
+            Double diagonal;
+            Double fakeGPSaltitude;
+
+            lowerLeftPoint.X = view.Extent.XMin;
+            lowerLeftPoint.Y = view.Extent.YMin;
+
+            upperRightPoint.X = view.Extent.XMax;
+            upperRightPoint.Y = view.Extent.YMax;
+
+            PointToLatLong(lowerLeftPoint, out latXmin, out longYmin);
+            PointToLatLong(upperRightPoint, out latXmax, out longYmax);
+
+            diagonal = distance(latXmin, longYmin, latXmax, longYmax, 'K') * 1000; // "1KM * 1000
+            diagonal = Math.Round(diagonal, 2);
+
+            fakeGPSaltitude = dblEGA + (0.5 * Math.Sqrt(3) * diagonal);
+            fakeGPSaltitude = Math.Round(fakeGPSaltitude, 2);
+
+            _arcMapAlt = Convert.ToString(0.5 * Math.Sqrt(3) * diagonal);
+            _gpsAltitude = Convert.ToString(dblEGA + (0.5 * Math.Sqrt(3) * diagonal));
+
+            point.X = (view.Extent.XMax + view.Extent.XMin) / 2;
+            point.Y = (view.Extent.YMax + view.Extent.YMin) / 2;
+
+            Double lat;
+            Double lon;
+
+            PointToLatLong(point, out lat, out lon);
+
+            Double n = 1000;
+
+            if (_map.MapScale > 0)
+            {
+                if (_map.MapScale > 5000)
+                    n = Math.Round(_map.MapScale * 0.45);
+                else if (_map.MapScale > 4000 && _map.MapScale <= 5000)
+                    n = Math.Round(_map.MapScale * 0.5);
+                else if (_map.MapScale > 3000 && _map.MapScale <= 5000)
+                    n = Math.Round(_map.MapScale * 0.55);
+                else if (_map.MapScale > 2000 && _map.MapScale <= 5000)
+                    n = Math.Round(_map.MapScale * 0.6);
+                else if (_map.MapScale > 1000 && _map.MapScale <= 5000)
+                    n = Math.Round(_map.MapScale * 0.65);
+                else
+                {
+                    Double factor = (1001 - _map.MapScale) / 1000;
+                    factor = Math.Pow(factor, 2);
+                    factor = 0.65 + factor;
+                    if (factor > 1)
+                    {
+                        factor = Math.Pow(factor, 2);
+                        if (factor > 1.7)
+                            factor = factor * 1.5;
+                    }
+                    n = Math.Round(_map.MapScale * factor);
+                }
+            }
+
+            String convLat = DecimalPosToDegrees(lat, enumLongLat.Latitude, enumReturnFormat.NMEA);
+            String convLong = DecimalPosToDegrees(lon, enumLongLat.Longitude, enumReturnFormat.NMEA);
+
+            lat = Math.Round(lat, 5);
+            lon = Math.Round(lon, 5);
+
+            _arcMapLat = Convert.ToString(lat);
+            _arcMapLong = Convert.ToString(lon);
+
+            String nowTime = DateTime.Now.ToString("HHmmss.ss");
+            String nowDate = DateTime.Now.ToString("ddMMyy");
+
+            String checkSumString, checkSumRMC, checkSumGLL, checkSumGGA, checkSumVTG;
+
+            checkSumString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E";
+            checkSumRMC = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E*" + checkSumRMC;
+            _gpsRMCString = _gpsString;
+
+            checkSumString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A";
+            checkSumGLL = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A*" + checkSumGLL;
+            _gpsGLLString = _gpsString;
+
+            checkSumString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,";
+            checkSumGGA = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,*" + checkSumGGA;
+            _gpsGGAString = _gpsString;
+
+            checkSumString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K";
+            checkSumVTG = GetCheckSum(ref checkSumString);
+
+            _gpsString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K*" + checkSumVTG;
+            _gpsVTGString = _gpsString;
+
+
+            FakeGPS();
+            CreateKML();
         }
 
         #endregion
@@ -108,9 +225,11 @@ namespace AM2GE
             _application = this.Hook as IApplication;
             _mxdocument = (IMxDocument)_application.Document;
             _map = _mxdocument.FocusMap;
-            ActiveViewEventTracking(true);
+            ActiveViewEventTracking();
+        }
 
-
+        private void initializeTracking()
+        {
             if (!System.IO.Directory.Exists(_trackingFilePath))
                 System.IO.Directory.CreateDirectory(_trackingFilePath);
 
@@ -140,7 +259,11 @@ namespace AM2GE
 
             _sw.Close();
 
+            //if (_loadFile)
+            //{
             System.Diagnostics.Process.Start(_trackingFileLocation);
+                //_loadFile = false;
+            //}
             
         }
 
@@ -207,120 +330,7 @@ namespace AM2GE
             return;
         }
 
-        private void OnActiveViewEventsViewRefreshed(ESRI.ArcGIS.Carto.IActiveView view, ESRI.ArcGIS.Carto.esriViewDrawPhase phase, System.Object data, ESRI.ArcGIS.Geometry.IEnvelope envelope)
-        {
-            IPoint point = new Point();
-            IPoint lowerLeftPoint = new Point();
-            IPoint upperRightPoint = new Point();
-
-
-            Double latXmin;
-            Double latXmax;
-
-            Double longYmin;
-            Double longYmax;
-
-            Double diagonal;
-            Double fakeGPSaltitude;
-
-            lowerLeftPoint.X = view.Extent.XMin;
-            lowerLeftPoint.Y = view.Extent.YMin;
-
-            upperRightPoint.X = view.Extent.XMax;
-            upperRightPoint.Y = view.Extent.YMax;
-
-            PointToLatLong(lowerLeftPoint, out latXmin, out longYmin);
-            PointToLatLong(upperRightPoint, out latXmax, out longYmax);
-
-            diagonal = distance(latXmin, longYmin, latXmax, longYmax, 'K') * 1000; // "1KM * 1000
-            diagonal = Math.Round(diagonal, 2);
-
-            fakeGPSaltitude = dblEGA + (0.5 * Math.Sqrt(3) * diagonal);
-            fakeGPSaltitude = Math.Round(fakeGPSaltitude, 2);
-
-            _gpsAltitude = Convert.ToString(dblEGA + (0.5 * Math.Sqrt(3) * diagonal));
-
-            point.X = (view.Extent.XMax + view.Extent.XMin) / 2;
-            point.Y = (view.Extent.YMax + view.Extent.YMin) / 2;
-
-            Double lat;
-            Double lon;
-
-            PointToLatLong(point, out lat, out lon);
-
-            Double n = 1000;
-
-            if (_map.MapScale > 0)
-            {
-                if (_map.MapScale > 5000)
-                    n = Math.Round(_map.MapScale * 0.45);
-                else if (_map.MapScale > 4000 && _map.MapScale <= 5000)
-                    n = Math.Round(_map.MapScale * 0.5);
-                else if (_map.MapScale > 3000 && _map.MapScale <= 5000)
-                    n = Math.Round(_map.MapScale * 0.55);
-                else if (_map.MapScale > 2000 && _map.MapScale <= 5000)
-                    n = Math.Round(_map.MapScale * 0.6);
-                else if (_map.MapScale > 1000 && _map.MapScale <= 5000)
-                    n = Math.Round(_map.MapScale * 0.65);
-                else
-                {
-                    Double factor = (1001 - _map.MapScale) / 1000;
-                    factor = Math.Pow(factor, 2);
-                    factor = 0.65 + factor;
-                    if (factor > 1)
-                    {
-                        factor = Math.Pow(factor, 2);
-                        if (factor > 1.7)
-                            factor = factor * 1.5;
-                    }
-                    n = Math.Round(_map.MapScale * factor);
-                }
-            }
-
-            String convLat = DecimalPosToDegrees(lat, enumLongLat.Latitude, enumReturnFormat.NMEA);
-            String convLong = DecimalPosToDegrees(lon, enumLongLat.Longitude, enumReturnFormat.NMEA);
-
-            lat = Math.Round(lat, 5);
-            lon = Math.Round(lon, 5);
-
-            _arcMapLat = Convert.ToString(lat);
-            _arcMapLong = Convert.ToString(lon);
-
-            String nowTime = DateTime.Now.ToString("HHmmss.ss");
-            String nowDate = DateTime.Now.ToString("ddMMyy");
-
-            String checkSumString, checkSumRMC, checkSumGLL, checkSumGGA, checkSumVTG;
-
-            checkSumString = "$GPRMC," + nowTime + ",A," + convLat + ","+ convLong + ",0.00,0.00," + nowDate + ",0.0,E";
-            checkSumRMC = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPRMC," + nowTime + ",A," + convLat + "," + convLong + ",0.00,0.00," + nowDate + ",0.0,E*" + checkSumRMC;
-            _gpsRMCString = _gpsString;
-
-            checkSumString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A";
-            checkSumGLL = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPGLL," + convLat + "," + convLong + "," + nowTime + ",A*" + checkSumGLL;
-            _gpsGLLString = _gpsString;
-
-            checkSumString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,";
-            checkSumGGA = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPGGA," + nowTime + "," + convLat + "," + convLong + ",1,5,0.0," + fakeGPSaltitude + ",M," + fakeGPSaltitude + ",M,,*" + checkSumGGA;
-            _gpsGGAString = _gpsString;
-
-            checkSumString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K";
-            checkSumVTG = GetCheckSum(ref checkSumString);
-
-            _gpsString = "$GPVTG,0.0,T,0.0,M,0.0,N,00.00,K*" + checkSumVTG;
-            _gpsVTGString = _gpsString;
-
-
-            FakeGPS();
-            CreateKML();
-
-        }
-
+        
         private double distance(double lat1, double lon1, double lat2, double lon2, char unit)
         {
             //'M' is statute miles
@@ -352,17 +362,19 @@ namespace AM2GE
             return (rad / Math.PI * 180.0);
         }
 
-        private void ActiveViewEventTracking(bool turnOn)
+        private void ActiveViewEventTracking()
         {
-            if (turnOn)
+            ESRI.ArcGIS.Carto.IActiveViewEvents_Event activeViewEvents = _map as ESRI.ArcGIS.Carto.IActiveViewEvents_Event;
+            _ActiveViewEventsViewRefreshed = new ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler(OnActiveViewEventsViewRefreshed);
+            if (!this.Checked)
             {
-                ESRI.ArcGIS.Carto.IActiveViewEvents_Event activeViewEvents = _map as ESRI.ArcGIS.Carto.IActiveViewEvents_Event;
-                _ActiveViewEventsViewRefreshed = new ESRI.ArcGIS.Carto.IActiveViewEvents_ViewRefreshedEventHandler(OnActiveViewEventsViewRefreshed);
+                this.Checked = true;
                 activeViewEvents.ViewRefreshed += _ActiveViewEventsViewRefreshed;
             }
             else
             {
-
+                this.Checked = false;
+                activeViewEvents.ViewRefreshed -= _ActiveViewEventsViewRefreshed;
             }
 
         }
