@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncArcMapToGoogleEarth10_3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncArcMapToGoogleEarth10_2", "SyncArcMapToGoogleEarth10_2\SyncArcMapToGoogleEarth10_2.csproj", "{C69BFABD-11C0-45D3-AB5B-FD28B9DC0156}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncArcMapToGoogleEarth10_4", "SyncArcMapToGoogleEarth10_4\SyncArcMapToGoogleEarth10_4.csproj", "{B0FB08CC-2EE8-4106-82ED-5E70E2985E25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C69BFABD-11C0-45D3-AB5B-FD28B9DC0156}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C69BFABD-11C0-45D3-AB5B-FD28B9DC0156}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C69BFABD-11C0-45D3-AB5B-FD28B9DC0156}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0FB08CC-2EE8-4106-82ED-5E70E2985E25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0FB08CC-2EE8-4106-82ED-5E70E2985E25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0FB08CC-2EE8-4106-82ED-5E70E2985E25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0FB08CC-2EE8-4106-82ED-5E70E2985E25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
