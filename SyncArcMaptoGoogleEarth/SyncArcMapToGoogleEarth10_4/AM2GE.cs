@@ -224,7 +224,7 @@ namespace SyncArcMapToGoogleEarth10_4
             _sw.WriteLine("<Link>");
             _sw.WriteLine("<href>" + _trackingFileLocation2 + "</href>");
             _sw.WriteLine("<refreshMode>onInterval</refreshMode>");
-            _sw.WriteLine("<refreshInterval>2</refreshInterval>");
+            _sw.WriteLine("<refreshInterval>0.5</refreshInterval>"); // 0.5 Chosen becasue anything less and google earth begins to show signs of problems
             _sw.WriteLine("</Link>");
             _sw.WriteLine("</NetworkLink>");
             _sw.WriteLine("</kml>");
