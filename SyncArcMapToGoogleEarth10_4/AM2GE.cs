@@ -391,27 +391,27 @@ namespace SyncArcMapToGoogleEarth10_4
             return Value.ToString();
         }
 
-        private String GetCheckSum(ref String InString)
-        {
-            long Current;
-            long Last;
+        //private String GetCheckSum(ref String InString)
+        //{
+        //    long Current;
+        //    long Last;
 
-            try
-            {
-                if (InString.Substring(1, 1) == "$")
-                    InString = InString.Substring(2);
+        //    try
+        //    {
+        //        if (InString.Substring(1, 1) == "$")
+        //            InString = InString.Substring(2);
 
-                Last = (int)InString.Substring(1, 1).ToCharArray()[0];
+        //        Last = (int)InString.Substring(1, 1).ToCharArray()[0];
 
-                for (Current = 2; Current <= InString.Length; Current++)
-                    Last = Last ^ (int)InString.Substring((int)Current, 1).ToCharArray()[0];
-                return String.Format("{0:X}", Last);
+        //        for (Current = 2; Current <= InString.Length; Current++)
+        //            Last = Last ^ (int)InString.Substring((int)Current, 1).ToCharArray()[0];
+        //        return String.Format("{0:X}", Last);
 
 
-            }
-            catch (Exception) { }
-            return "0"; // this might cause a crash >....
-        }
+        //    }
+        //    catch (Exception) { }
+        //    return "0"; // this might cause a crash >....
+        //}
 
         #endregion
     }
