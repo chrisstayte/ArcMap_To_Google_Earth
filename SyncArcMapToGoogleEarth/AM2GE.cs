@@ -27,7 +27,7 @@ using ESRI.ArcGIS.Geometry;
 using System;
 using System.IO;
 
-namespace SyncArcMapToGoogleEarth10_2
+namespace SyncArcMapToGoogleEarth
 {
     public class AM2GE : ESRI.ArcGIS.Desktop.AddIns.Button
     {
@@ -57,10 +57,12 @@ namespace SyncArcMapToGoogleEarth10_2
         private String _gpsAltitude = String.Empty;
 
         private StreamWriter _sw;
-        static private String _trackingFileName = "_AM2GE.kml";
-        static private String _trackingFilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
-        static private String _trackingFileLocation = _trackingFilePath + "NetworkLink" + _trackingFileName;
-        static private String _trackingFileLocation2 = _trackingFilePath + "TrackingFile" + _trackingFileName;
+        static private String _trackingFileNameEnd = "_AM2GE.kml";
+        static private String _trackingFileName = "TrackingFile" + _trackingFileNameEnd;
+        static private String _networkFileName = "NetworkLink" + _trackingFileNameEnd;
+        static private String _FilePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Arcmap2GoogleEarth\\";
+        static private String _networkLinkFilePath = _FilePath + _networkFileName;
+        static private String _trackingFilePath = _FilePath + _trackingFileName;
         private Double dblEGA = 1000;
 
         private IApplication _application;
@@ -202,63 +204,53 @@ namespace SyncArcMapToGoogleEarth10_2
 
         private void initializeTracking()
         {
-            if (!System.IO.Directory.Exists(_trackingFilePath))
-                System.IO.Directory.CreateDirectory(_trackingFilePath);
+            if (!System.IO.Directory.Exists(_FilePath))
+                System.IO.Directory.CreateDirectory(_FilePath);
 
-            _sw = File.CreateText(_trackingFileLocation);
+            _sw = File.CreateText(_networkLinkFilePath);
 
             _sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             _sw.WriteLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
-            _sw.WriteLine("<NetworkLink>");
+            _sw.WriteLine("<Folder>");
+            _sw.WriteLine("<open>1</open>");
             _sw.WriteLine("<name>ArcMap to Google Earth Sync</name>");
-            _sw.WriteLine("<visibility>1</visibility>");
-            _sw.WriteLine("<LookAt>");
-            _sw.WriteLine("<longitude>-84.103446</longitude>");
-            _sw.WriteLine("<latitude>39.715620</latitude>");
-            _sw.WriteLine("<altitude>0</altitude>");
-            _sw.WriteLine("<heading>0</heading>");
-            _sw.WriteLine("<tilt>0</tilt>");
-            _sw.WriteLine("<range>510</range>");
-            _sw.WriteLine("</LookAt>");
+            _sw.WriteLine("<NetworkLink>");
+            _sw.WriteLine("<name>Camera</name>");
             _sw.WriteLine("<flyToView>1</flyToView>");
             _sw.WriteLine("<Link>");
-            _sw.WriteLine("<href>" + _trackingFileLocation2 + "</href>");
+            _sw.WriteLine("<href>" + _trackingFileName + "</href>");
             _sw.WriteLine("<refreshMode>onInterval</refreshMode>");
-            _sw.WriteLine("<refreshInterval>2</refreshInterval>");
+            _sw.WriteLine("<refreshInterval>0.300000</refreshInterval>");
             _sw.WriteLine("</Link>");
             _sw.WriteLine("</NetworkLink>");
+            _sw.WriteLine("</Folder>");
             _sw.WriteLine("</kml>");
 
             _sw.Close();
 
-            System.Diagnostics.Process.Start(_trackingFileLocation);
+            System.Diagnostics.Process.Start(_networkLinkFilePath);
         }
 
         private void CreateTrackingKML()
         {
-            if (!System.IO.Directory.Exists(_trackingFilePath))
-                System.IO.Directory.CreateDirectory(_trackingFilePath);
+            if (!System.IO.Directory.Exists(_FilePath))
+                System.IO.Directory.CreateDirectory(_FilePath);
 
-            _sw = File.CreateText(_trackingFileLocation2);
+            _sw = File.CreateText(_trackingFilePath);
 
             _sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             _sw.WriteLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
-            _sw.WriteLine("<Placemark>");
-            _sw.WriteLine("<name>ArcMap Location</name>");
-            _sw.WriteLine("<visibility>1</visibility>");
+            _sw.WriteLine("<NetworkLinkControl>");
             _sw.WriteLine("<LookAt>");
             _sw.WriteLine("<longitude>" + _arcMapLong + "</longitude>");
             _sw.WriteLine("<latitude>" + _arcMapLat + "</latitude>");
-            //_sw.WriteLine("<altitudeMode>clampToGround</altitudemode>")
-            //_sw.WriteLine("<altitude>" + arcMapAlt + "</altitude>")
+            _sw.WriteLine("<altitudeMode>relativeToGround</altitudeMode>");
+            //_sw.WriteLine("<altitude> + " + _gpsAltitude + "</altitude>");
             _sw.WriteLine("<heading>0</heading>");
             _sw.WriteLine("<tilt>0</tilt>");
             _sw.WriteLine("<range>" + _arcMapAlt + "</range>");
             _sw.WriteLine("</LookAt>");
-            _sw.WriteLine("<Point>");
-            _sw.WriteLine("<coordinates>" + _arcMapLat + "," + _arcMapLong + "</coordinates>");
-            _sw.WriteLine("</Point>");
-            _sw.WriteLine("</Placemark>");
+            _sw.WriteLine("</NetworkLinkControl>");
             _sw.WriteLine("</kml>");
 
             _sw.Close();
@@ -389,28 +381,6 @@ namespace SyncArcMapToGoogleEarth10_2
             if (Math.Floor(Value).ToString().Length < Zeros)
                 return Value.ToString().PadLeft(Zeros, (char)'0');
             return Value.ToString();
-        }
-
-        private String GetCheckSum(ref String InString)
-        {
-            long Current;
-            long Last;
-
-            try
-            {
-                if (InString.Substring(1, 1) == "$")
-                    InString = InString.Substring(2);
-
-                Last = (int)InString.Substring(1, 1).ToCharArray()[0];
-
-                for (Current = 2; Current <= InString.Length; Current++)
-                    Last = Last ^ (int)InString.Substring((int)Current, 1).ToCharArray()[0];
-                return String.Format("{0:X}", Last);
-
-
-            }
-            catch (Exception) { }
-            return "0"; // this might cause a crash >....
         }
 
         #endregion

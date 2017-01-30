@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SyncArcMapToGoogleEarth10_2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("SyncArcMapToGoogleEarth")]
+[assembly: AssemblyDescription("Sync's Arcmap To Google Earth")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("SyncArcMapToGoogleEarth10_2")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2016")]
+[assembly: AssemblyCompany("ChrisStayte")]
+[assembly: AssemblyProduct("SyncArcMapToGoogleEarth")]
+[assembly: AssemblyCopyright("Copyright © Chris Stayte 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

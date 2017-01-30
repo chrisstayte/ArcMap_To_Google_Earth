@@ -2,18 +2,18 @@
   <Name>SyncArcMapToGoogleEarth</Name>
   <AddInID>{74ead95f-0a2f-4ada-af4d-45f7ffa6648c}</AddInID>
   <Description>Syncronizes ArcMap Desktop Extent View To Google Earth Desktop</Description>
-  <Version>1.0</Version>
-  <Image>Images\SyncArcMapToGoogleEarth10.3.png</Image>
+  <Version>1.0.1</Version>
+  <Image>Images\SyncArcMapToGoogleEarth.png</Image>
   <Author>ChrisStayte</Author>
   <Company>ChrisStayte</Company>
   <Date>2/17/2016</Date>
   <Targets>
-    <Target name="Desktop" version="10.3" />
+    <Target name="Desktop" version="10.4" />
   </Targets>
-  <AddIn language="CLR" library="SyncArcMapToGoogleEarth10_3.dll" namespace="SyncArcMapToGoogleEarth10_3">
+  <AddIn language="CLR" library="SyncArcMapToGoogleEarth.dll" namespace="SyncArcMapToGoogleEarth">
     <ArcMap>
       <Commands>
-        <Button id="ChrisStayte_SyncArcMapToGoogleEarth10_3_AM2GE" class="AM2GE" message="Syncronizes ArcMap Desktop Extent View To Google Earth Desktop" caption="Sync Arcmap To Google Earth" tip="Arcmap To Google Earth Sync" category="Arcmap To Google Earth" image="Images\AM2GE.png" />
+        <Button id="ChrisStayte_SyncArcMapToGoogleEarth_AM2GE" class="AM2GE" message="Syncronizes ArcMap Desktop Extent View To Google Earth Desktop" caption="Sync Arcmap To Google Earth" tip="Arcmap To Google Earth Sync" category="Arcmap To Google Earth" image="Images\AM2GE.png" />
       </Commands>
     </ArcMap>
   </AddIn>
