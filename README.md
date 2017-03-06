@@ -17,6 +17,6 @@ Sync Arcmap's view/extent to google earth. Google earth will follow where ever y
 
 ###Downloads
 
- - **Download Compiled Version 10.2 - [Link](https://github.com/ChrisStayte/PhotoCollector/releases/download/v10.2-1/SyncArcMapToGoogleEarth-10_2.zip)**
- - **Download Compiled Version 10.3 - [Link](https://github.com/ChrisStayte/PhotoCollector/releases/download/v10.3-1/SyncArcMapToGoogleEarth-10_3.zip)**
- - **Download Compiled Version 10.4 - [Link](https://github.com/ChrisStayte/PhotoCollector/releases/download/v10.4-1/SyncArcMapToGoogleEarth-10_4.zip)**
+ - **Download Compiled Version 10.2 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.2-1/SyncArcMapToGoogleEarth10.2.zip)**
+ - **Download Compiled Version 10.3 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.3-1/SyncArcMapToGoogleEarth-10.3.zip)**
+ - **Download Compiled Version 10.4 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.4-1/SyncArcMapToGoogleEarth10_4.zip)**
