@@ -15,14 +15,14 @@ Sync Arcmap's view/extent to google earth. Google earth will follow where ever y
 | Next is to configure Google Earth<br/><br/>Open Google Earth and go to Tools -> Options<br/><br/>Then go to the Navigation Tab<br/><br/>Change the Fly-To Speed to 5<br/><br/>*This only need to be done once per user / per machine | ![alt tag](Images/google_earth_config.png)
 
 
-###Downloads
+### Downloads
 
  - **Download Compiled Version 10.2 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.2-1/SyncArcMapToGoogleEarth10.2.zip)**
  - **Download Compiled Version 10.3 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.3-1/SyncArcMapToGoogleEarth-10.3.zip)**
  - **Download Compiled Version 10.4 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.4-1/SyncArcMapToGoogleEarth10_4.zip)**
  - **Download Compiled Version 10.5 - [Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.5-1/SyncArcMapToGoogleEarth.zip)**
 
-###License
+### License
 
 The MIT License (MIT)
 
