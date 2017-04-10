@@ -2,7 +2,7 @@
   <Name>SyncArcMapToGoogleEarth</Name>
   <AddInID>{74ead95f-0a2f-4ada-af4d-45f7ffa6648c}</AddInID>
   <Description>Syncronizes ArcMap Desktop Extent View To Google Earth Desktop</Description>
-  <Version>1.0.1</Version>
+  <Version>1.2</Version>
   <Image>Images\SyncArcMapToGoogleEarth.png</Image>
   <Author>ChrisStayte</Author>
   <Company>ChrisStayte</Company>
