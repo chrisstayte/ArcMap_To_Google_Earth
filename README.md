@@ -6,7 +6,7 @@ Sync Arcmap's view/extent to google earth. Google earth will follow where ever y
 
 ### Downloads
 
- - **Precompiled - [Download Link](https://github.com/ChrisStayte/ArcMap-To-Google-Earth/releases/download/v10.2-1/SyncArcMapToGoogleEarth10.2.zip)**
+ - **Precompiled - [Download Link](https://github.com/ChrisStayte/ArcMap_To_Google_Earth/releases/download/v1.2/SyncArcMapToGoogleEarth.esriAddIn)**
 
 ### Setup Instructions
 
