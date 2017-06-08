@@ -162,7 +162,7 @@ namespace SyncArcMapToGoogleEarth
                 tw.WriteLine("<Link>");
                 tw.WriteLine("<href>" + _currentViewFileName + "</href>");
                 tw.WriteLine("<refreshMode>onInterval</refreshMode>");
-                tw.WriteLine("<refreshInterval>0.300000</refreshInterval>");
+                tw.WriteLine("<refreshInterval>0.500000</refreshInterval>");
                 tw.WriteLine("</Link>");
                 tw.WriteLine("</NetworkLink>");
                 tw.WriteLine("</Folder>");
