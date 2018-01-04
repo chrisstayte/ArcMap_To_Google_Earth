@@ -8,7 +8,7 @@
   <Company>ChrisStayte</Company>
   <Date>2/17/2016</Date>
   <Targets>
-    <Target name="Desktop" version="10.5" />
+    <Target name="Desktop" version="10.4" />
   </Targets>
   <AddIn language="CLR" library="SyncArcMapToGoogleEarth.dll" namespace="SyncArcMapToGoogleEarth">
     <ArcMap>
